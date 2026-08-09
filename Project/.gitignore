@@ -1,6 +1,24 @@
+# Python virtual environment
 venv/
-__pycache__/
+
+# Python cache
+**/__pycache__/
 *.pyc
+
+# Environment files
+.env
+
+# MLflow generated files
 mlruns/
-mlflow.db
-/model.pkl
+*.db
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# DVC-generated model output
+model.pkl
