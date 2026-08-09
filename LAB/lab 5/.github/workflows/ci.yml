@@ -1,0 +1,49 @@
+name: Lab 5 ML CI/CD
+
+on:
+  push:
+    paths:
+      - "LAB/lab 5/**"
+  pull_request:
+    paths:
+      - "LAB/lab 5/**"
+
+jobs:
+  test-and-evaluate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r "LAB/lab 5/requirements.txt"
+
+      - name: Train model
+        run: |
+          python "LAB/lab 5/src/train.py"
+
+      - name: Evaluate model and enforce R2 quality gate
+        run: |
+          python "LAB/lab 5/src/evaluate.py"
+
+      - name: Run pytest
+        run: |
+          pytest "LAB/lab 5/tests" -v
+
+      - name: Install Hugging Face Hub
+        run: |
+          pip install huggingface_hub
+
+      - name: Deploy model to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_REPO_ID: ${{ vars.HF_REPO_ID }}
+          run: |
+            python -c "from huggingface_hub import HfApi; import os; api=HfApi(token=os.environ['HF_TOKEN']); repo=os.environ['HF_REPO_ID']; api.upload_file(path_or_fileobj='LAB/lab 5/model.pkl', path_in_repo='model.pkl', repo_id=repo, repo_type='space'); api.upload_file(path_or_fileobj='LAB/lab 5/metrics.json', path_in_repo='metrics.json', repo_id=repo, repo_type='space'); api.upload_file(path_or_fileobj='LAB/lab 5/index.html', path_in_repo='index.html', repo_id=repo, repo_type='space')"
