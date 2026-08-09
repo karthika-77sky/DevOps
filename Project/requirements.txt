@@ -4,3 +4,4 @@ joblib
 scikit-learn
 mlflow
 pytest
+httpx2
