@@ -1,3 +1,4 @@
+
 import mlflow
 import mlflow.sklearn
 import pandas as pd
@@ -13,7 +14,7 @@ from sklearn.metrics import accuracy_score
 
 
 # Load dataset
-data = pd.read_csv("Project/data/iris.csv")
+data = pd.read_csv("data/iris.csv")
 
 X = data.drop("target", axis=1)
 y = data["target"]
@@ -54,12 +55,13 @@ models = {
 
 
 results = {}
+run_ids = {}
 
 
 # Train and track each model
 for name, model in models.items():
 
-    with mlflow.start_run(run_name=name):
+    with mlflow.start_run(run_name=name) as run:
 
         # Train
         model.fit(X_train, y_train)
@@ -72,6 +74,7 @@ for name, model in models.items():
 
         # Store result
         results[name] = accuracy
+        run_ids[name] = run.info.run_id
 
         # Log parameters
         mlflow.log_param("model_name", name)
@@ -100,8 +103,10 @@ for name, model in models.items():
 # Find best model
 best_model_name = max(results, key=results.get)
 best_accuracy = results[best_model_name]
+best_run_id = run_ids[best_model_name]
 
 print("\nModel Comparison:")
+
 for name, accuracy in results.items():
     print(f"{name}: {accuracy:.4f}")
 
@@ -109,10 +114,24 @@ print(f"\nBest Model: {best_model_name}")
 print(f"Best Accuracy: {best_accuracy:.4f}")
 
 
+# Register best model in MLflow Model Registry
+best_model_uri = f"runs:/{best_run_id}/model"
+
+registered_model = mlflow.register_model(
+    model_uri=best_model_uri,
+    name="iris-best-model"
+)
+
+print("\nBest model registered in MLflow Model Registry")
+print(f"Model Name: iris-best-model")
+print(f"Model Version: {registered_model.version}")
+
+
 # Train best model again and save it
 best_model = models[best_model_name]
 best_model.fit(X_train, y_train)
 
-joblib.dump(best_model, "Project/model.pkl")
+joblib.dump(best_model, "model.pkl")
 
-print("\nBest model saved to Project/model.pkl")
+print("\nBest model saved to model.pkl")
+

@@ -1,13 +1,25 @@
+
 from fastapi import FastAPI
-import joblib
+import mlflow
+import mlflow.pyfunc
 import numpy as np
 from pathlib import Path
 
+
 app = FastAPI(title="Iris Classification API")
 
-# Load trained model
-MODEL_PATH = Path(__file__).resolve().parent.parent / "model.pkl"
-model = joblib.load(MODEL_PATH)
+
+# MLflow configuration
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+MLFLOW_DB = PROJECT_DIR / "mlflow.db"
+
+mlflow.set_tracking_uri(f"sqlite:///{MLFLOW_DB}")
+
+
+# Load model from MLflow Model Registry
+MODEL_URI = "models:/iris-best-model/latest"
+
+model = mlflow.pyfunc.load_model(MODEL_URI)
 
 
 @app.get("/")
