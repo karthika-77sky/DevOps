@@ -1,0 +1,51 @@
+import mlflow
+import mlflow.sklearn
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import joblib
+
+
+# Load dataset
+data = load_iris()
+X = data.data
+y = data.target
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Start MLflow experiment
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+mlflow.set_experiment("iris-classification")
+
+with mlflow.start_run():
+
+    # Train model
+    model = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    )
+
+    model.fit(X_train, y_train)
+
+    # Make predictions
+    predictions = model.predict(X_test)
+
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, predictions)
+
+    # Log parameters and metrics
+    mlflow.log_param("n_estimators", 100)
+    mlflow.log_metric("accuracy", accuracy)
+
+    # Save model
+    joblib.dump(model, "model.pkl")
+
+    # Log model to MLflow
+    mlflow.sklearn.log_model(model, "model")
+
+    print(f"Model trained successfully!")
+    print(f"Accuracy: {accuracy:.4f}")
