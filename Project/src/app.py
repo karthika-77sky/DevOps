@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 import joblib
 import numpy as np
+from pathlib import Path
 
 app = FastAPI(title="Iris Classification API")
 
 # Load trained model
-model = joblib.load("model.pkl")
+MODEL_PATH = Path(__file__).resolve().parent.parent / "model.pkl"
+model = joblib.load(MODEL_PATH)
 
 
 @app.get("/")

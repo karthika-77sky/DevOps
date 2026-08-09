@@ -21,3 +21,7 @@ Project/*.db
 # OS files
 .DS_Store
 Thumbs.db
+
+# Root-level MLflow files
+mlruns/
+*.db
